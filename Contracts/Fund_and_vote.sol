@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.5.0 <=0.9.0;
 
-contract FundAllocationVote {
+import "./Project_registration_with_ipfs.sol";
+
+contract FundAllocationAndVote {
+    ProjectRegistry projectRegistryInstance;
+
     uint256 public minThreshold;
-
     uint256 public yesVotes;
-
     uint256 public totalVotes;
-
     uint256 public poolFunds;
-
     uint256 public requestedAmount;
 
     // Here project is located with an ID with its vote count with 0 index as yes and 1 as no
@@ -53,24 +53,36 @@ contract FundAllocationVote {
 
         uint256 yesPercentage = (yesVote * 100) / (yesVotes + noVote);
 
-        uint256 Allocation = (yesPercentage * poolFunds) / 100;
+        uint256 allocation = (yesPercentage * poolFunds) / 100;
 
-        if (Allocation < minThreshold) {
-            uint256 additionalFundsRequired = minThreshold - Allocation;
-            Allocation += additionalFundsRequired;
+        if (allocation < minThreshold) {
+            uint256 additionalFundsRequired = minThreshold - allocation;
+            allocation += additionalFundsRequired;
         }
 
-        if (Allocation > requestedAmount) {
-            Allocation = requestedAmount;
+        if (allocation > requestedAmount) {
+            allocation = requestedAmount;
         }
 
-        return Allocation;
+        return allocation;
     }
 
+    receive() external payable {}
+
+    // >>> UPDATE FUNCTION
     function transferFund(uint256 projectId) private view {
         uint256 allocatedFund = calculateAllocation(projectId);
 
+        // Add projectOwnerAddress at last position (11) at the contract where project details are initiated;
         // also we need to add projectOwner in project details
         // from projectId we get the project owners address, there in we tranfer the allocation to ....
+
+        // >>>>>> RELEASE AFTER ABOVE UPDATION
+
+        // (,,,,,,,,,, address projectOwnerAddress) = projectRegistryInstance.getProjectDetails(projectId);
+        // require(projectOwnerAddress != address(0),"Invalid project");
+        // require(address(this).balance >= 0 && address(this).balance >= allocatedFund, "Not enough fund with contract");
+
+        // projectOwnerAddress.tranfer(allocatedFund);
     }
 }
